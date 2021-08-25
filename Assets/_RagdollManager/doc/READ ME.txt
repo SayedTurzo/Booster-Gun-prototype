@@ -1,0 +1,73 @@
+
+Notes: 
+for some reason on export & import LayerMask field gets lost and resets to nothing.
+I set prefabs LayerMask fields to correct layers on Setup button, but if for some reason in
+scene you get
+nothing in LayerMask field - revert those objects to prefab or set BallProjectile Colliding
+Layer field to
+'ColliderLayer, ColliderInactiveLayer' and BallTrigger Collide With field to 'PlayerLayer, NPCLayer'.
+
+
+
+Version 1.1 Fixes
+
+RagdollManager.cs
+- changed getting value from Animator.hasRootMotion to Animator.applyRootMotion. 
+   ( Animator.hasRootMotion always returned false making reverting to initial root motion wrong. )
+- removed setting rigidbodies to not kinematic in RagdollManager.startTransition() 
+   ( making disableRagdoll() setting rigidbodies to kinematic useless. )
+- moved getting original transforms to LateUpdate() and not in OnAnimatorIK() making OnAnimatorIK() 
+   not necessary. ( In 5.1 was getting wrong values. )
+
+
+Other
+- Fixed ragdoll events contents for enabling disabling colliders.
+- Fixed SoapBall getting correct size upon impact.
+- Added ForceMode property to RagdollManager script to controll extra force modes.
+
+Unity 5.2.2 changes
+- Not necessary any more to have OnAnimatorIK() function get corrent animator transforms.
+   Now its done in LateUpdate() for Unity 5.2
+- Animator now remeber states and parameters on enable/disable animator.
+   Commented parts of code to save and reset animator states and parameters.
+   If for some reason that changes just make global define SAVE_ANIMATOR_STATES in player settings.
+
+Unity 5.2.3 changes
+- Unity has chosen to disable raycasting possibility on objects with Rigidbody::detectCollision disabled.
+  They said that in future colliders will have 'EnableCollision' field to enable raycast on those objects.
+- So until that happens and to keep ragdoll performance cheap by not colliding with anything when not in ragdoll I
+  made ragdoll colliders switching layers on enable/disable ragdoll.
+- Layers are 'ColliderLayer' when ragdolled and 'ColliderInactiveLayer' when not in ragdoll.
+  So shoot rays and spheres and capsules with mask = GetMask("ColliderLayer, "ColliderInactiveLayer") if you want to     target both or choose just one as you like.
+- I made examples and changes in test scenes and scripts how its done.
+
+
+
+
+
+Version 2.0 changes
+
+ - System now works on humanoid and generic rigs.
+
+ - Using two scripts that derive from mabstract class RagdollManager.cs: RagdollManagerHum.cs and RagdollManagerGen.cs.
+
+ - For generic rigs, setup have to be created manually and added to ragdollManager.RagdollBones array before clicking 'AddColliderScripts' button.
+Also there is no body orientation and getting up by default ( on generics ), but I made few scripts that implements getting up and orientation on human and fourlegged creature.
+
+ - Added custom velocity calculation for ragdoll bodies that are in kinematic state.
+Now during animations, custom velocity of kinematic rigid bodies are calculated and if ragdolled with null velocity passed,  system will used that custom velocity. If character runs, then on ragdoll it will fall forward for instance, and if run backwards  then it will fall backwards.
+You can disable/enable this feature by commenting/uncommenting CALC_CUSTOM_VELOCITY_KINEMATIC
+
+ - Added option to use joints to constraint legs in place when hit.Also improved legs placement when hit in kinematic state.
+
+
+ - Various smaller bugfixes and improvements.
+
+
+NOTE: Under Tools -> Ragdoll Manager Package -> Setup Tags Layers
+      - You can setup all tags, layers, input axis necessary for package scenes.
+      - You can delete Package Editor Layer later if you wish
+      - Only inportant layers are 'ColliderLayer' and ColliderInactiveLayer' that RagdollManager needs
+      - You can change the names of active / inactive layers in RagdollManager fields ( must be existing layer )
+
+
